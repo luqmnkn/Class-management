@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ScrollView, FlatList } from 'react-native';
 import { collection, getDocs, query, where, doc, updateDoc } from 'firebase/firestore';
-import { db } from '../firebaseConfig';
+import { auth, db } from '../firebaseConfig';
 
 export default function AssignLesson({ onBack }) {
   const [students, setStudents] = useState([]);
@@ -13,9 +13,10 @@ export default function AssignLesson({ onBack }) {
     fetchStudents();
   }, []);
 
-  const fetchStudents = async () => {
+const fetchStudents = async () => {
     try {
-      const q = query(collection(db, 'users'), where('role', '==', 'student'));
+      const user = auth.currentUser;
+      const q = query(collection(db, 'users'), where('role', '==', 'student'), where('teacherId', '==', user.uid));
       const querySnapshot = await getDocs(q);
       const studentList = querySnapshot.docs.map(doc => ({
         id: doc.id,
